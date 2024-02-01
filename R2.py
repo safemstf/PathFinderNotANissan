@@ -49,22 +49,24 @@ def CalculateWeight(start_node_id, target_node_id):
 
 # Create New roads
 def Pathfinder():
-    # loss array for pathfinder
+    k = 3
+    NewRoadLoss = []
 
     for i in range(36000):
         for j in range(100):
-            # todo: a and b need to be the 100 nodes going from a random A to a random B
             a, b = random.sample(G.nodes(), 2)
-            CalculateWeight(a, b)
+
+            OldRoadWeight = CalculateWeight(a, b) # find distance using existing edges
 
             G.add_edges_from([(a, b)])
+            tempRoadWeight = CalculateWeight(a, b)  # maybe multiply by "f" here?
 
-            # if loss is zero or negative it means new weight is large and a bad path was found
-            if StoredLoss[j] <= 0:
-                pass
+            tempRoadLoss = OldRoadWeight - tempRoadWeight
+            NewRoadLoss.append((a, b, tempRoadLoss))
 
-            # if loss is positive it means a better road was found.
-            if StoredLoss[j] > 0:
-                pass
-
-    pass
+            # sort NewRoadLoss
+            NewRoadLoss.sort(key=lambda x: [2], reverse=True)
+            top_k_edges = NewRoadLoss[:k]
+            # todo: remove poor quality roads low volume and High weight roads
+            # connectivity factor has to be 0.5 (reference canvas)
+            return top_k_edges
