@@ -47,26 +47,45 @@ def CalculateWeight(start_node_id, target_node_id):
     return path_length
 
 
-# Create New roads
-def Pathfinder():
+def Pathfinder(G, iterations=36000, update_interval=70):
     k = 3
     NewRoadLoss = []
+    plt.ion()
+    fig, ax = plt.subplots()
 
-    for i in range(36000):
-        for j in range(100):
-            a, b = random.sample(G.nodes(), 2)
+    for i in tqdm.tqdm(range(iterations)):
+        for _ in range(100):
+            a, b = random.sample(list(G.nodes()), 2)
 
-            OldRoadWeight = CalculateWeight(a, b) # find distance using existing edges
+            if not G.has_edge(a, b):
+                OldRoadWeight = CalculateWeight(a, b)
+                G.add_edge(a, b, weight=random.randint(1, 10))  # Add random weight for new edge
+                tempRoadWeight = CalculateWeight(a, b)
+                tempRoadLoss = OldRoadWeight - tempRoadWeight
+                NewRoadLoss.append((a, b, tempRoadLoss))
 
-            G.add_edges_from([(a, b)])
-            tempRoadWeight = CalculateWeight(a, b)  # maybe multiply by "f" here?
+        NewRoadLoss.sort(key=lambda x: x[2], reverse=True)
+        top_k_edges = NewRoadLoss[:k]
+        print(top_k_edges)
 
-            tempRoadLoss = OldRoadWeight - tempRoadWeight
-            NewRoadLoss.append((a, b, tempRoadLoss))
+        if i % update_interval == 0:  # Update the plot at specified intervals
+            ax.clear()
+            pos = nx.spring_layout(G)
+            nx.draw(G, pos, ax=ax, with_labels=True, node_color='lightgreen', node_size=1200)
+            plt.draw()
+            plt.pause(0.1)
 
-            # sort NewRoadLoss
-            NewRoadLoss.sort(key=lambda x: [2], reverse=True)
-            top_k_edges = NewRoadLoss[:k]
-            # todo: remove poor quality roads low volume and High weight roads
-            # connectivity factor has to be 0.5 (reference canvas)
-            return top_k_edges
+    plt.ioff()
+
+
+def Evaluation():
+    pass
+
+
+def main():
+    Pathfinder(G)
+    print(Pathfinder(G))
+
+
+if __name__ == "__main__":
+    main()
