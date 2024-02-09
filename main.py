@@ -33,8 +33,20 @@ class TrafficSimulationApp:
     def update_graph_visualization(self):
         if self.master.winfo_exists():
             self.ax.clear()
-            nx.draw_networkx(G, self.pos, edgelist=self.highlighted_edges, edge_color='red', with_labels=True,
-                             node_size=700, node_color='lightblue', ax=self.ax)
+            # Draw all nodes and edges with default styling
+            nx.draw_networkx_nodes(G, self.pos, node_color='lightblue', ax=self.ax, node_size=700)
+            nx.draw_networkx_labels(G, self.pos, ax=self.ax)
+            nx.draw_networkx_edges(G, self.pos, edgelist=G.edges(), edge_color='black', ax=self.ax)
+
+            # Highlight the edges that are currently being considered
+            if self.highlighted_edges:
+                nx.draw_networkx_edges(G, self.pos, edgelist=self.highlighted_edges, edge_color='red', width=2,
+                                       ax=self.ax)
+
+            # Additionally, draw potential roads in a different color (e.g., green)
+            nx.draw_networkx_edges(G, self.pos, edgelist=potential_roads, edge_color='green', style='dashed',
+                                   ax=self.ax)
+
             self.canvas.draw_idle()
 
     def run_simulation(self):
