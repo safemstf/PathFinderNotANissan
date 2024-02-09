@@ -1,50 +1,75 @@
-# Create a simulation environment using NetworkX
-    # Generate 60 nodes "N" with random connections to 2 other nodes "P" should be set to 0.05 or 5
-    # but, for R1, we will use a predefined set of nodes listed below:
-        #G.add_edges_from([(0, 2, {'weight': 6}), (0, 3, {'weight': 9}), (1, 2, {'weight': 11}), (1, 4, {'weight': 10}),
-                  # (2, 3, {'weight': 7})])
-        # after creating the nodes we will draw them using matplotlib and networkX drawing functions:
-        # the tutorial defines some values here:
-            #links = [(u, v) for (u, v, d) in G.edges(data=True)]
-            # pos = nx.nx_pydot.graphviz_layout(G)
-            # nx.draw_networkx_nodes(G, pos, node_size=1200, node_color='lightgreen', linewidths=0.25)  # draw nodes
-            # nx.draw_networkx_edges(G, pos, edgelist=links, width=4)  # draw edges
-
-    # calculate weight function
-        # find the weight of traveling from node a to node b
-        # Find the shortest path from source to target using Dijkstra's algorithm and networkx built in library command
-        # path_length to the new node= nx.dijkstra_path_length(G, source=start_node_id, target=target_node_id, weight='weight')
-        # StoredWeights.append(path_length of new road) add to the array using append
-        # return path_length
+import tkinter as tk
+from tkinter import messagebox
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import networkx as nx
+from threading import Thread, Event
+import time
+import random
+from R2 import SimulateTraffic, G, potential_roads, nt
 
 
+class TrafficSimulationApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Network Analysis")
+        self.master.geometry("1200x800")
+        self.highlighted_edges = []
+        self.stop_event = Event()
 
-    # define PathFinder(nodes, roads)
-        # define the value of "k"
-        # start array to store loss values
-        # loop that cycles 36,000 (for seconds)
-        # loop 100 times (T)
-            # select 2 random nodes from the set of nodes in the graph G
-            # calculate the weight using calculate weight function to find how far it would be to go between the nodes.
-            # create a new temporary road
-            # calculate using calculate weight function the difference the new road makes
-            # save loss in a loss array that you can sort later.
-            # start a trip to different nodes with a shrinkage factor "f" between 0.6 and 0.8
+        self.fig, self.ax = plt.subplots(figsize=(5, 4))
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.master)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-            # call calculate loss(new weight, old weight)
-                # Use networkx djkstra to calculate old weight: "L" (old weight - new weight) x traffic volume = loss
-                # if loss is zero or negative it means new weight is large and a bad path was found
-            # store the values in loss array
+        self.run_button = tk.Button(master, text="Run Simulation", command=self.start_simulation_thread)
+        self.run_button.pack(side=tk.BOTTOM, pady=10)
 
-            # if loss is positive it means a better road was found.
-            # only 3 new roads should be generated a time "k"
-            # store positive values in loss array
+        self.pos = nx.spring_layout(G)
 
-            # sort array based on value
-            # choose the 3 highest values as new roads
-            # return new roads
+        self.update_graph_visualization()
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def update_graph_visualization(self):
+        if self.master.winfo_exists():
+            self.ax.clear()
+            nx.draw_networkx(G, self.pos, edgelist=self.highlighted_edges, edge_color='red', with_labels=True,
+                             node_size=700, node_color='lightblue', ax=self.ax)
+            self.canvas.draw_idle()
+
+    def run_simulation(self):
+        print("Simulation Started")
+        try:
+            for _ in range(10):
+                if self.stop_event.is_set():
+                    break
+                self.master.after(0, self.update_highlighted_edges_randomly)  # Thread-safe GUI update
+                time.sleep(1)  # Simulate work
+            # Assuming SimulateTraffic function updates highlighted_edges and respects the stop_event
+            SimulateTraffic(G, nt, potential_roads, iterations=36000, AgentCount=100)
+            print("Simulation Completed")
+        except Exception as e:
+            # Use master.after to safely communicate with the main thread for GUI updates
+            self.master.after(0, lambda err=e: messagebox.showerror("Error", str(err)))
+
+    def update_highlighted_edges_randomly(self):
+        if not self.stop_event.is_set():
+            edges_list = list(G.edges())
+            if edges_list:
+                self.highlighted_edges = [random.choice(edges_list)]
+                self.master.after(0, self.update_graph_visualization)
+
+    def start_simulation_thread(self):
+        self.stop_event.clear()
+        simulation_thread = Thread(target=self.run_simulation)
+        simulation_thread.start()
+
+    def on_closing(self):
+        self.stop_event.set()
+        self.master.destroy()
 
 
-from R2 import Pathfinder
-
-
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TrafficSimulationApp(root)
+    root.mainloop()
