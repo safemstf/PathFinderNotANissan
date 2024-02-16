@@ -1,4 +1,3 @@
-import datetime
 import csv
 import random
 
@@ -36,8 +35,9 @@ class TrafficSimulation:
     def benefit(self, x, y):
         """Calculate the benefit of adding a road between nodes x and y."""
         current_spdXY = self.calculate_shortest_path(x, y)
-        proposed_dXY = current_spdXY * 0.8  # Adjusted road length to simulate new road
-        direct_benefit = (current_spdXY - proposed_dXY) * (self.nt.get((x, y), 0) + self.nt.get((y, x), 0))
+        proposed_dXY = current_spdXY * 0.6  # Adjusted road length to simulate new road
+        direct_benefit = (current_spdXY - proposed_dXY) * (
+                    self.nt.get((x, y), 0) + self.nt.get((y, x), 0))  # look again at this
 
         indirect_benefit = 0
         for n1, n2 in set((n1, n2) for n1 in self.graph.neighbors(y) for n2 in self.graph.neighbors(x) if n1 != n2):
@@ -124,8 +124,7 @@ class TrafficSimulation:
         return selected_road_details
 
     def save_traffic_counts_to_csv(self):
-        now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_path = f"TrafficCounts_{now}.csv"
+        file_path = "TrafficCounts.csv"
 
         with open(file_path, 'w', newline='') as csvfile:
             fieldnames = ['iteration', 'traffic_counts']
@@ -138,8 +137,7 @@ class TrafficSimulation:
         print(f"Traffic counts saved successfully to {file_path}.")
 
     def save_graph_edges_to_csv(self):
-        now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_path = f"GraphEdges_{now}.csv"
+        file_path = "GraphEdges.csv"
 
         with open(file_path, 'w', newline='') as csvfile:
             fieldnames = ['From', 'To', 'Weight']
