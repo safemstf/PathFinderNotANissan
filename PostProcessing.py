@@ -121,10 +121,8 @@ class SimulationAnalysis(tk.Tk):
             label.pack()
 
     def calculate_all_road_benefits(self):
-        # Example: Calculate benefits for each potential road.
-        # This requires self.nt and self.G to be defined and populated.
         road_benefits = {}
-        potential_roads = [(0, 2), (0, 3), (1, 2), (1, 4), (2, 3)]  # Example potential roads
+        potential_roads = [(0, 2), (0, 3), (1, 2), (1, 4), (2, 3)] 
         for road in potential_roads:
             benefit = self.calculate_benefit(*road)
             road_benefits[road] = benefit
@@ -133,10 +131,9 @@ class SimulationAnalysis(tk.Tk):
     def calculate_benefit(self, x, y):
         """Calculate the benefit of adding a road between nodes x and y."""
         current_spdXY = self.calculate_shortest_path(x, y)
-        proposed_dXY = current_spdXY * 0.6  # Adjusted road length to simulate new road
+        proposed_dXY = current_spdXY * 0.6 
         direct_benefit = (current_spdXY - proposed_dXY) * (
-                self.nt.get((x, y), 0) + self.nt.get((y, x), 0))  # look again at this
-
+                self.nt.get((x, y), 0) + self.nt.get((y, x), 0)) 
         indirect_benefit = 0
         for n1, n2 in set((n1, n2) for n1 in self.graph.neighbors(y) for n2 in self.graph.neighbors(x) if n1 != n2):
             current_spdXN1 = self.calculate_shortest_path(x, n1)
