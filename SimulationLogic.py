@@ -36,7 +36,7 @@ class TrafficSimulation:
         current_spdXY = self.calculate_shortest_path(x, y)
         proposed_dXY = current_spdXY * 0.6  # Adjusted road length to simulate new road
         direct_benefit = (current_spdXY - proposed_dXY) * (
-                    self.nt.get((x, y), 0) + self.nt.get((y, x), 0))  # look again at this
+                    self.nt.get((x, y), 0) + self.nt.get((y, x), 0))  
 
         indirect_benefit = 0
         for n1, n2 in set((n1, n2) for n1 in self.graph.neighbors(y) for n2 in self.graph.neighbors(x) if n1 != n2):
@@ -65,8 +65,10 @@ class TrafficSimulation:
                         edge = (path[i], path[i + 1])
                         if edge in self.nt:
                             self.nt[edge] += 1
-                        elif (edge[1], edge[0]) in self.nt:  # For undirected graphs
+                        elif (edge[1], edge[0]) in self.nt:
                             self.nt[(edge[1], edge[0])] += 1
+                     # Select a random potential road to evaluate
+                    potential_road = random.choice(self.potential_roads)
                         else:
                             print(f"Edge not found in nt: {edge}")
 
