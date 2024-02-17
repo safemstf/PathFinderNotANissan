@@ -7,8 +7,7 @@ import tqdm
 
 
 class TrafficSimulation:
-    # todo: change to 360000 after testing
-    def __init__(self, graph, potential_roads, iterations=360, agent_count=100, update_interval=500):
+    def __init__(self, graph, potential_roads, iterations=36000, agent_count=100, update_interval=500):
         self.G = graph
         self.graph_original = graph.copy()
         self.graph = graph.copy()
